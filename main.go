@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fatih/color"
 	"github.com/urfave/cli"
 )
 
@@ -90,7 +91,7 @@ func Exists(filename string) bool {
 // Question function
 func Question(q string) bool {
 	result := true
-	fmt.Print(q)
+	fmt.Print(color.GreenString(q))
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -102,8 +103,8 @@ func Question(q string) bool {
 			result = false
 			break
 		} else {
-			fmt.Println("Please answer Y or N")
-			fmt.Print(q)
+			fmt.Println(color.RedString("Please answer Y or N"))
+			fmt.Print(color.GreenString(q))
 		}
 	}
 
@@ -329,13 +330,13 @@ func main() {
 		log.Printf("\"output\": %#v\n", param["output"])
 
 		if !Exists(param["config"]) {
-			log.Fatalf("\x1b[31m %s not find\x1b[0m\n", param["config"])
+			log.Fatalf(color.RedString("%s not find"), param["config"])
 		}
 		if Exists(param["output"]) {
-			if Question(fmt.Sprintf("\x1b[32m %s already exists. if you wish to overwrite the file, press enter.[Y/n] \x1b[0m", param["output"])) {
-				log.Printf("\x1b[32m Overwrite the %s\x1b[0m\n", param["output"])
+			if Question(fmt.Sprintf("%s already exists. if you wish to overwrite the file, press enter.[Y/n]", param["output"])) {
+				log.Printf(color.GreenString("Overwrite the %s"), param["output"])
 			} else {
-				log.Fatalf("\x1b[31m Rename or delete the %s\x1b[0m\n", param["output"])
+				log.Fatalf(color.RedString("Rename or delete the %s"), param["output"])
 			}
 		}
 
