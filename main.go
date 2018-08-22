@@ -14,6 +14,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/fatih/color"
 	"github.com/urfave/cli"
+	pb "gopkg.in/cheggaaa/pb.v2"
 )
 
 // Config for toml
@@ -118,6 +119,7 @@ func Question(q string) bool {
 func getDatetimeDuration(unitStr string) time.Duration {
 	var timeDuration time.Duration
 	unitStr = strings.ToLower(unitStr)
+	// TODO use switch
 	if unitStr == "min" {
 		timeDuration = time.Minute
 	} else if unitStr == "sec" {
@@ -239,8 +241,27 @@ func isBetween(start time.Time, end time.Time, target time.Time) bool {
 	return false
 }
 
+func getProgressCount(end time.Time, start time.Time, unitStr string) int {
+	duration := end.Sub(start)
+	var progressCount int
+	unitStr = strings.ToLower(unitStr)
+	// TODO use switch
+	if unitStr == "min" {
+		progressCount = int(duration.Minutes())
+	} else if unitStr == "sec" {
+		progressCount = int(duration.Seconds())
+	} else if unitStr == "hour" {
+		progressCount = int(duration.Hours())
+	} else { // default
+		progressCount = int(duration.Minutes())
+	}
+	return progressCount
+}
+
 // genarete dummy data
 func generator(filename string, config Config) {
+	log.Printf("datetime range: %+v to %+v\n", config.Datetime.Start, config.Datetime.End)
+
 	// TODO
 	//書き込みファイル準備
 	file, err := os.Create(filename)
@@ -266,10 +287,10 @@ func generator(filename string, config Config) {
 	columnSize := len(config.Header[0].Row)                            // set column size for data
 	rand.Seed(time.Now().UnixNano())                                   // set random seed
 
+	progressCount := getProgressCount(config.Datetime.End, current, config.Datetime.Sampling.Unit)
+	progressBar := pb.StartNew(progressCount)
 	// write data
 	for current.Before(config.Datetime.End) { // range loop
-		fmt.Println(current)
-
 		// generate tag data combination list
 		combineList, tagDataColumnIndexList := getCombineTagList(config)
 
@@ -295,8 +316,10 @@ func generator(filename string, config Config) {
 		current = current.Add(
 			time.Duration(config.Datetime.Sampling.Num) * timeDuration,
 		) // set current datetime
+		progressBar.Increment()
 	}
 	writer.Flush()
+	progressBar.Finish()
 }
 
 func main() {
@@ -345,7 +368,6 @@ func main() {
 		_, err := toml.DecodeFile(param["config"], &config)
 		failOnError(err)
 
-		fmt.Printf("datetime:%+v\n", config.Datetime.Start)
 		// fmt.Printf("max datetime:%d\n", config.Data.Max)
 		// fmt.Printf("min datetime:%d\n", config.Data.Min)
 		// for k, v := range config.Header {
