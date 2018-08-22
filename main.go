@@ -145,6 +145,17 @@ func getNormalData(config Config) string {
 	}
 }
 
+// getAbnormalData generate abnormal data
+func getAbnormalData(abnormalData AbnormalData) string {
+	switch strings.ToLower(abnormalData.Pointtype) {
+	case "int":
+		return strconv.Itoa(rand.Intn(abnormalData.Max-abnormalData.Min) + abnormalData.Min)
+	default:
+		// case of float
+		return fmt.Sprint(randFloatn(abnormalData.Max-abnormalData.Min) + float64(abnormalData.Min))
+	}
+}
+
 // combination
 func combine(s1 [][]string, s2 []string) [][]string {
 	var result [][]string
@@ -186,6 +197,16 @@ func indexOf(element int, data []int) int {
 	return -1 // not found.
 }
 
+// indexOf AbnormalData array TODO use interface
+func indexOfColumn(columnNumber int, abnormalData []AbnormalData) int {
+	for i, v := range abnormalData {
+		if columnNumber == v.Column {
+			return i
+		}
+	}
+	return -1 // not found.
+}
+
 // getCombineTagList
 func getCombineTagList(config Config) ([][]string, []int) {
 	var tagDataColumnIndexList []int // init slice for tag data column index
@@ -207,6 +228,14 @@ func getCombineTagList(config Config) ([][]string, []int) {
 		combineList = combine(combineList, targetList)
 	}
 	return combineList, tagDataColumnIndexList
+}
+
+// TODO use interface
+func isBetween(start time.Time, end time.Time, target time.Time) bool {
+	if (start.Before(target) || start.Equal(target)) && (end.After(target) || end.Equal(target)) {
+		return true
+	}
+	return false
 }
 
 // genarete dummy data
@@ -238,9 +267,6 @@ func generator(filename string, config Config) {
 
 	// write data
 	for current.Before(config.Datetime.End) { // range loop
-		current = current.Add(
-			time.Duration(config.Datetime.Sampling.Num) * timeDuration,
-		) // set current datetime
 		fmt.Println(current)
 
 		// generate tag data combination list
@@ -249,17 +275,25 @@ func generator(filename string, config Config) {
 		for _, combineListValue := range combineList {
 			dataRow := make([]string, columnSize) // init slice for raw data
 			for i := 0; i < columnSize; i++ {
-				tagDataColumnNumberIndex := indexOf(i, tagDataColumnIndexList)
-				if tagDataColumnNumberIndex > -1 { // set tag data
+				if tagDataColumnNumberIndex := indexOf(i, tagDataColumnIndexList); tagDataColumnNumberIndex > -1 {
+					// set tag data
 					dataRow[i] = combineListValue[tagDataColumnNumberIndex]
-				} else if config.Datetime.Column-1 == i { // set datetime data
+				} else if config.Datetime.Column-1 == i {
+					// set datetime data
 					dataRow[i] = current.Format(layout)
-				} else { // set normal data
+				} else if abnormalDataColumnNumberIndex := indexOfColumn(i+1, config.Data.Abnormal); abnormalDataColumnNumberIndex > -1 && isBetween(config.Data.Abnormal[abnormalDataColumnNumberIndex].Start, config.Data.Abnormal[abnormalDataColumnNumberIndex].End, current) {
+					// set abnormal data
+					dataRow[i] = getAbnormalData(config.Data.Abnormal[abnormalDataColumnNumberIndex])
+				} else {
+					// set normal data
 					dataRow[i] = getNormalData(config)
 				}
 			}
 			writer.Write(dataRow)
 		}
+		current = current.Add(
+			time.Duration(config.Datetime.Sampling.Num) * timeDuration,
+		) // set current datetime
 	}
 	writer.Flush()
 }
