@@ -1,0 +1,56 @@
+
+[datetime]
+start = 2018-11-11T00:00:00
+end = 2018-12-11T23:00:00
+column = 1
+  [datetime.sampling]
+  num = 1
+  unit = "min"
+
+
+[data]
+min = 70
+max = 100
+pointtype = "int"
+
+  [[data.tag]]
+  column = 4
+  value = ["x", "y"]
+
+  [[data.tag]]
+  column = 5
+  value = ["a", "b", "c"]
+
+  [[data.tag]]
+  column = 6
+  value = ["XX", "YY"]
+
+  [[data.abnormal]]
+  column = 2
+  min = 100
+  max = 200
+  pointtype = "int"
+  start = 2018-11-12T00:00:00
+  end = 2018-11-14T23:00:00
+
+    [data.abnormal.transition]
+    num = 1
+    unit = "min"
+
+  [[data.abnormal]]
+  column = 3
+  min = 100
+  max = 200
+  pointtype = "float"
+  start = 2018-11-14T00:00:00
+  end = 2018-11-16T23:00:00
+
+    [data.abnormal.transition]
+    num = 1
+    unit = "hour"
+
+[[header]]
+row = ["datetime", "aaaa", "bbbb", "cccc", "dddd", "eeee", "ffff", "gggg"]
+
+[[header]]
+row = ["timestamp", "number", "number", "number", "string", "string", "string", "string"]
