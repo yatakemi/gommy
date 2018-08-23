@@ -26,10 +26,11 @@ type Config struct {
 
 // DatetimeConfig for toml
 type DatetimeConfig struct {
-	Start    time.Time        `toml:"start"`
-	End      time.Time        `toml:"end"`
-	Column   int              `toml:"column"`
-	Sampling SamplingDatetime `toml:"sampling"`
+	DatetimeFormat string           `toml"datetimeFormat"`
+	Start          time.Time        `toml:"start"`
+	End            time.Time        `toml:"end"`
+	Column         int              `toml:"column"`
+	Sampling       SamplingDatetime `toml:"sampling"`
 }
 
 // SamplingDatetime for toml
@@ -45,6 +46,7 @@ type DataConfig struct {
 	Pointtype string         `toml:"pointtype"`
 	Abnormal  []AbnormalData `toml:"abnormal"`
 	Tag       []TagData      `toml:"tag"`
+	Datetime  []DatetimeData `toml:"datetime"`
 }
 
 // AbnormalData for toml
@@ -69,6 +71,13 @@ type TagData struct {
 	Column int      `toml:"column"`
 	Rate   int      `toml:"rate"` // TODO only rate=100
 	Value  []string `toml:"value"`
+}
+
+// DatetimeData for toml
+type DatetimeData struct {
+	Column         int    `toml:"column"`
+	DatetimeFormat string `toml:"datetimeFormat"`
+	Add            int    `toml:"add"` // [ms]
 }
 
 // HeaderConfig for toml
@@ -159,6 +168,12 @@ func getAbnormalData(abnormalData AbnormalData) string {
 	}
 }
 
+// getDatetimeData
+func getDatetimeData(datetimeData DatetimeData, current time.Time) string {
+	t := current.Add(time.Duration(datetimeData.Add) * time.Millisecond)
+	return t.Format(datetimeData.DatetimeFormat)
+}
+
 // combination
 func combine(s1 [][]string, s2 []string) [][]string {
 	var result [][]string
@@ -203,6 +218,16 @@ func indexOf(element int, data []int) int {
 // indexOf AbnormalData array TODO use interface
 func indexOfColumn(columnNumber int, abnormalData []AbnormalData) int {
 	for i, v := range abnormalData {
+		if columnNumber == v.Column {
+			return i
+		}
+	}
+	return -1 // not found.
+}
+
+// indexOf DatetimeData array TODO use interface
+func indexOfDatetimeDataColumn(columnNumber int, datetimeData []DatetimeData) int {
+	for i, v := range datetimeData {
 		if columnNumber == v.Column {
 			return i
 		}
@@ -283,7 +308,7 @@ func generator(filename string, config Config) {
 	// set configuration for dummy data
 	timeDuration := getDatetimeDuration(config.Datetime.Sampling.Unit) // set time duration unit for datetime
 	current := config.Datetime.Start                                   // set start datetime
-	const layout = "2006-01-02 15:04:05"                               // set datetime format
+	layout := config.Datetime.DatetimeFormat                           // set datetime format
 	columnSize := len(config.Header[0].Row)                            // set column size for data
 	rand.Seed(time.Now().UnixNano())                                   // set random seed
 
@@ -301,11 +326,14 @@ func generator(filename string, config Config) {
 					// set tag data
 					dataRow[i] = combineListValue[tagDataColumnNumberIndex]
 				} else if config.Datetime.Column-1 == i {
-					// set datetime data
+					// set a base datetime data
 					dataRow[i] = current.Format(layout)
 				} else if abnormalDataColumnNumberIndex := indexOfColumn(i+1, config.Data.Abnormal); abnormalDataColumnNumberIndex > -1 && isBetween(config.Data.Abnormal[abnormalDataColumnNumberIndex].Start, config.Data.Abnormal[abnormalDataColumnNumberIndex].End, current) {
 					// set abnormal data
 					dataRow[i] = getAbnormalData(config.Data.Abnormal[abnormalDataColumnNumberIndex])
+				} else if datetimeDataColumnNumberIndex := indexOfDatetimeDataColumn(i+1, config.Data.Datetime); datetimeDataColumnNumberIndex > -1 {
+					// set datetime data
+					dataRow[i] = getDatetimeData(config.Data.Datetime[datetimeDataColumnNumberIndex], current)
 				} else {
 					// set normal data
 					dataRow[i] = getNormalData(config)
