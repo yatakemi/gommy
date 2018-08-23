@@ -19,10 +19,10 @@ $ go get github.com/yatakemi/gommy
 ```
 $ gommy -h
 NAME:
-   DummyGenerator - This app create to the dummy data files.
+   gommy - This app create to the dummy data files.
 
 USAGE:
-   main [global options] command [command options] [arguments...]
+   gommy [global options] command [command options] [arguments...]
 
 VERSION:
    0.0.1
