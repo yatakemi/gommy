@@ -43,6 +43,7 @@ GLOBAL OPTIONS:
 - add testing
 - add CI
 - improve performance
+- add newline characters declaration and character encoding declaration
 
 ## Contributing
 
