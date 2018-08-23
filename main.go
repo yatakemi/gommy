@@ -369,8 +369,8 @@ func generator(filename string, config Config) {
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "DummyGenerator"
-	app.Usage = "This app create to the dummy data files."
+	app.Name = "gommy"
+	app.Usage = "This app create a dummy data file."
 	app.Version = "0.0.1"
 
 	// flags
