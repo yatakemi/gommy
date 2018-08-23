@@ -287,8 +287,7 @@ func getProgressCount(end time.Time, start time.Time, unitStr string) int {
 func generator(filename string, config Config) {
 	log.Printf("datetime range: %+v to %+v\n", config.Datetime.Start, config.Datetime.End)
 
-	// TODO
-	//書き込みファイル準備
+	// prepare output file
 	file, err := os.Create(filename)
 	// file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // ファイルがあれば追記
 	failOnError(err)
@@ -296,8 +295,8 @@ func generator(filename string, config Config) {
 
 	// writer := csv.NewWriter(transform.NewWriter(file2, japanese.ShiftJIS.NewEncoder()))
 	// writer := csv.NewWriter(transform.NewWriter(file2, japanese.EUCJP.NewEncoder()))
-	writer := csv.NewWriter(file) // utf8
-	writer.UseCRLF = true         // デフォルトはLFのみ
+	writer := csv.NewWriter(file) // default utf8
+	writer.UseCRLF = true         // writer's default is LF
 
 	// write header
 	for _, v := range config.Header {
@@ -414,8 +413,6 @@ func main() {
 		_, err := toml.DecodeFile(param["config"], &config)
 		failOnError(err)
 
-		// fmt.Printf("max datetime:%d\n", config.Data.Max)
-		// fmt.Printf("min datetime:%d\n", config.Data.Min)
 		// for k, v := range config.Header {
 		// 	fmt.Printf("header row%#v %#v\n", k, v.Row)
 		// }
