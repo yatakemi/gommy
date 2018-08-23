@@ -41,7 +41,7 @@ pointtype = "float"
 
     [data.abnormal.transition]
     num = 1
-    unit = "min"
+    unit = "hour"
 
   [[data.abnormal]]
   column = 3
@@ -52,8 +52,8 @@ pointtype = "float"
   end = 2018-11-11T10:00:00
 
     [data.abnormal.transition]
-    num = 1
-    unit = "hour"
+    num = 5
+    unit = "min"
 
 [[header]]
 row = ["datetime", "aaaa", "bbbb", "cccc", "dddd", "eeee", "ffff", "gggg"]

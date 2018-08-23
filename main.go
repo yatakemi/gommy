@@ -158,13 +158,13 @@ func getNormalData(config Config) string {
 }
 
 // getAbnormalData generate abnormal data
-func getAbnormalData(abnormalData AbnormalData) string {
+func getAbnormalData(abnormalData AbnormalData, max float64, min float64) string {
 	switch strings.ToLower(abnormalData.Pointtype) {
 	case "int":
-		return strconv.Itoa(rand.Intn(int(abnormalData.Max-abnormalData.Min)) + int(abnormalData.Min))
+		return strconv.Itoa(rand.Intn(int(max-min)) + int(min))
 	default:
 		// case of float
-		return fmt.Sprint(randFloatn(abnormalData.Max-abnormalData.Min) + abnormalData.Min)
+		return fmt.Sprint(randFloatn(max-min) + min)
 	}
 }
 
@@ -330,7 +330,25 @@ func generator(filename string, config Config) {
 					dataRow[i] = current.Format(layout)
 				} else if abnormalDataColumnNumberIndex := indexOfColumn(i+1, config.Data.Abnormal); abnormalDataColumnNumberIndex > -1 && isBetween(config.Data.Abnormal[abnormalDataColumnNumberIndex].Start, config.Data.Abnormal[abnormalDataColumnNumberIndex].End, current) {
 					// set abnormal data
-					dataRow[i] = getAbnormalData(config.Data.Abnormal[abnormalDataColumnNumberIndex])
+					abnormalData := config.Data.Abnormal[abnormalDataColumnNumberIndex]
+
+					transitionStart := abnormalData.Start
+					transitionEnd := abnormalData.Start.Add(time.Duration(abnormalData.Transition.Num) * getDatetimeDuration(abnormalData.Transition.Unit))
+					allCount := float64(getProgressCount(transitionEnd, transitionStart, config.Datetime.Sampling.Unit))
+					transitionCount := 1 + float64(getProgressCount(current, abnormalData.Start, config.Datetime.Sampling.Unit))
+
+					unitMax := (abnormalData.Max - config.Data.Max) / allCount
+					unitMin := (abnormalData.Min - config.Data.Min) / allCount
+
+					var max, min float64
+					if transitionCount < allCount {
+						max = unitMax * transitionCount
+						min = unitMin * transitionCount
+					} else {
+						max = abnormalData.Max
+						min = abnormalData.Min
+					}
+					dataRow[i] = getAbnormalData(abnormalData, max, min)
 				} else if datetimeDataColumnNumberIndex := indexOfDatetimeDataColumn(i+1, config.Data.Datetime); datetimeDataColumnNumberIndex > -1 {
 					// set datetime data
 					dataRow[i] = getDatetimeData(config.Data.Datetime[datetimeDataColumnNumberIndex], current)
