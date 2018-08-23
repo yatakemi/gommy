@@ -1,4 +1,4 @@
-package gommy
+package main
 
 import (
 	"bufio"
