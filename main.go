@@ -40,8 +40,8 @@ type SamplingDatetime struct {
 
 // DataConfig for toml
 type DataConfig struct {
-	Min       int            `toml:"min"`
-	Max       int            `toml:"max"`
+	Min       float64        `toml:"min"`
+	Max       float64        `toml:"max"`
 	Pointtype string         `toml:"pointtype"`
 	Abnormal  []AbnormalData `toml:"abnormal"`
 	Tag       []TagData      `toml:"tag"`
@@ -49,8 +49,8 @@ type DataConfig struct {
 
 // AbnormalData for toml
 type AbnormalData struct {
-	Min        int                    `toml:"min"`
-	Max        int                    `toml:"max"`
+	Min        float64                `toml:"min"`
+	Max        float64                `toml:"max"`
 	Pointtype  string                 `toml:"pointtype"`
 	Column     int                    `toml:"column"`
 	Start      time.Time              `toml:"start"`
@@ -133,18 +133,18 @@ func getDatetimeDuration(unitStr string) time.Duration {
 }
 
 // randFloatn generate random float number
-func randFloatn(max int) float64 {
-	return rand.Float64() * float64(max)
+func randFloatn(max float64) float64 {
+	return rand.Float64() * max
 }
 
 // getNormalData generate normal data
 func getNormalData(config Config) string {
 	switch strings.ToLower(config.Data.Pointtype) {
 	case "int":
-		return strconv.Itoa(rand.Intn(config.Data.Max-config.Data.Min) + config.Data.Min)
+		return strconv.Itoa(rand.Intn(int(config.Data.Max-config.Data.Min)) + int(config.Data.Min))
 	default:
 		// case of float
-		return fmt.Sprint(randFloatn(config.Data.Max-config.Data.Min) + float64(config.Data.Min))
+		return fmt.Sprint(randFloatn(config.Data.Max-config.Data.Min) + config.Data.Min)
 	}
 }
 
@@ -152,10 +152,10 @@ func getNormalData(config Config) string {
 func getAbnormalData(abnormalData AbnormalData) string {
 	switch strings.ToLower(abnormalData.Pointtype) {
 	case "int":
-		return strconv.Itoa(rand.Intn(abnormalData.Max-abnormalData.Min) + abnormalData.Min)
+		return strconv.Itoa(rand.Intn(int(abnormalData.Max-abnormalData.Min)) + int(abnormalData.Min))
 	default:
 		// case of float
-		return fmt.Sprint(randFloatn(abnormalData.Max-abnormalData.Min) + float64(abnormalData.Min))
+		return fmt.Sprint(randFloatn(abnormalData.Max-abnormalData.Min) + abnormalData.Min)
 	}
 }
 
