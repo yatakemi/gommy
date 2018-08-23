@@ -26,7 +26,7 @@ type Config struct {
 
 // DatetimeConfig for toml
 type DatetimeConfig struct {
-	DatetimeFormat string           `toml"datetimeFormat"`
+	DatetimeFormat string           `toml:"datetimeFormat"`
 	Start          time.Time        `toml:"start"`
 	End            time.Time        `toml:"end"`
 	Column         int              `toml:"column"`
