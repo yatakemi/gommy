@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/csv"
 	"fmt"
 	"log"
@@ -11,48 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
 	pb "gopkg.in/cheggaaa/pb.v2"
 )
-
-// failOnError function
-func failOnError(err error) {
-	if err != nil {
-		log.Fatal("Error:", err)
-	}
-}
-
-// Exists function is checking a file exists
-func Exists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil
-}
-
-// Question function
-func Question(q string) bool {
-	result := true
-	fmt.Print(color.GreenString(q))
-
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		i := scanner.Text()
-
-		if i == "Y" || i == "y" || i == "" {
-			break
-		} else if i == "N" || i == "n" {
-			result = false
-			break
-		} else {
-			fmt.Println(color.RedString("Please answer Y or N"))
-			fmt.Print(color.GreenString(q))
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		panic(err)
-	}
-	return result
-}
 
 // getDatetimeDuration function
 func getDatetimeDuration(unitStr string) time.Duration {
@@ -220,7 +179,7 @@ func Generator(filename string, config Config) {
 	// prepare output file
 	file, err := os.Create(filename)
 	// file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666) // ファイルがあれば追記
-	failOnError(err)
+	FailOnError(err)
 	defer file.Close()
 
 	// writer := csv.NewWriter(transform.NewWriter(file2, japanese.ShiftJIS.NewEncoder()))
