@@ -172,7 +172,7 @@ func getProgressCount(end time.Time, start time.Time, unitStr string) int {
 	return progressCount
 }
 
-// genarete dummy data
+// Genarete dummy data
 func Generator(filename string, config Config) {
 	log.Printf("datetime range: %+v to %+v\n", config.Datetime.Start, config.Datetime.End)
 

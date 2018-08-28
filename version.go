@@ -1,5 +1,6 @@
 package main
 
+// app info
 const (
 	Name    = "gommy"
 	Usage   = "The command create a dummy data file based on a definition file."
